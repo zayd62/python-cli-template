@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "/home/zayd/.pyenv/versions/3.7.4/bin/python",
+    "python.linting.pylamaArgs": ["-i E501"]
+}
