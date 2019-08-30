@@ -13,6 +13,8 @@ class MyFormatter(logging.Formatter):
     """
     # the base format, used when a format for a specific level is not defined
     base_format = '%(levelname)s: %(asctime)-8s [%(filename)s:%(lineno)d]: %(message)s \n'
+
+    # defining the critical format
     critical_format = base_format
 
     def __init__(self):
@@ -53,20 +55,37 @@ def main():
     # https://docs.python.org/3/library/argparse.html
 
     # create the arguent parser
-    parser = argparse.ArgumentParser(description='A description of the cli program')
+    parser = argparse.ArgumentParser(
+        description='A description of the cli program')
 
     # mutually exclusive means that only one option can be supplied. supplying both will result in an error
     group = parser.add_mutually_exclusive_group()
 
     # "store_true" means that if the argument is provided, the value of the argument is true
-    group.add_argument('-v', '--verbose', action='store_true', help='Give more output')
-    group.add_argument('-q', '--quiet', action='store_true', help='Give no output')
+    group.add_argument('-v', '--verbose', action='store_true',
+                       help='Give more output')
+    group.add_argument('-q', '--quiet', action='store_true',
+                       help='Give no output')
 
     # a mandatory argument. we also specified that only integers can be supplied
-    parser.add_argument('square', help='This is the help for echo, a mandatory argument of type int', type=int)
+    parser.add_argument(
+        'square', help='This is the help for echo, a mandatory argument of type int', type=int)
 
     # an argument that accepts multiple value seperated by a comma. the "-" means it is optional
-    parser.add_argument('--multiple', help='This optional option accepts multiple options', nargs='*')
+    parser.add_argument(
+        '--multiple', help='This optional option accepts multiple options', nargs='*')
+
+    # code for subparsers
+    subparsers = parser.add_subparsers(
+        title='List of sub commands', description='A description of all the available sub commmands', help = 'All the commands')
+
+    # code for subparser command a
+    parser_a = subparsers.add_parser('a', help='a help')
+    parser_a.add_argument('bar', type=int, help='bar help')
+
+    # create the parser for the "b" command
+    parser_b = subparsers.add_parser('b', help='b help')
+    parser_b.add_argument('--baz', choices='XYZ', help='baz help')
 
     # writing the arguments to a variable to be accesed
     args = parser.parse_args()
@@ -103,14 +122,16 @@ def main():
     # application code go below here
 
     # prints all the arguments
-    print("args", args)
+    print("args -->", args)
+    print('vars(args) -->', vars(args))
 
     print('this is the start of the program. This should appear even if verbosity is disabled, unless the quiet option is enabled')
     # below are logging levels with "debug" being the lowest and "critical" being the highest
     logging.debug(
         'The lowest level. Used for small details. Usually you care about these messages only when diagnosing problems.')
     logging.info('Used to record information on general events in your program or confirm that things are working at their point in the program.')
-    logging.warning('Used to indicate a potential problem that doesn’t prevent the program from working but might do so in the future.')
+    logging.warning(
+        'Used to indicate a potential problem that doesn’t prevent the program from working but might do so in the future.')
     logging.error(
         'Used to record an error that caused the program to fail to do something')
     logging.critical(
