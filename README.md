@@ -13,7 +13,7 @@ A template repository used for building cli. Feature include:
 
 This is a [GitHub template repository](https://help.github.com/en/articles/creating-a-template-repository) which you can use as a base by clicking "use this template"
 
-## installing with pip
+## pypi and pip
 
 To install with pip, you first need to upload to pypi. Instruction on how to do that are available at https://packaging.python.org/tutorials/packaging-projects/. 
 
