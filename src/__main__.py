@@ -46,6 +46,14 @@ class MyFormatter(logging.Formatter):
         return result
 
 
+def a_parser(args):
+    print(' this is called when subparser a is invoded')
+
+
+def b_parser(args):
+    print(' this is called when subparser b is invoded')
+
+
 def main():
     #####################################################################
     #            Code for parsing command line arguments                #
@@ -76,16 +84,21 @@ def main():
         '--multiple', help='This optional option accepts multiple options', nargs='*')
 
     # code for subparsers
+    # dest='subparser_name' is used to identify the subparser name
     subparsers = parser.add_subparsers(
-        title='List of sub commands', description='A description of all the available sub commmands', help = 'All the commands')
+        title='List of sub commands', description='A description of all the available sub commmands', help='All the commands', dest='subparser_name')
 
     # code for subparser command a
     parser_a = subparsers.add_parser('a', help='a help')
     parser_a.add_argument('bar', type=int, help='bar help')
+    # a function to call when subparser invoked
+    parser_a.set_defaults(func=a_parser)
 
     # create the parser for the "b" command
     parser_b = subparsers.add_parser('b', help='b help')
-    parser_b.add_argument('--baz', choices='XYZ', help='baz help')
+    parser_b.add_argument('--baz', help='baz help')
+    # a function to call when subparser invoked
+    parser_b.set_defaults(func=b_parser)
 
     # writing the arguments to a variable to be accesed
     args = parser.parse_args()
@@ -119,13 +132,25 @@ def main():
 
     logging.root.setLevel(logging.DEBUG)
 
-    # application code go below here
+    #########################################
+    #        Application code below         #
+    #########################################
 
-    # prints all the arguments
+    # prints all the arguments as Namespace object https://docs.python.org/3/library/argparse.html#the-namespace-object
     print("args -->", args)
+
+    # print all the arguments as a dictionary
     print('vars(args) -->', vars(args))
 
+    # identifying if a subparser is invoked. if invoked, call appripriate function
+    if 'func' in vars(args):
+        print('calling the appropriate function for parser')
+        args.func(args)
+    else:
+        print("no subparser called")
+
     print('this is the start of the program. This should appear even if verbosity is disabled, unless the quiet option is enabled')
+
     # below are logging levels with "debug" being the lowest and "critical" being the highest
     logging.debug(
         'The lowest level. Used for small details. Usually you care about these messages only when diagnosing problems.')
