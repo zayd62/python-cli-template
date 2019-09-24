@@ -67,6 +67,18 @@ def main():
     # if verbose flag not passed on as an argument, this will disable all logging levels
     if not args.verbose:
         logging.disable(logging.CRITICAL)  # This will disable all logging
+        # the table below shows the logging levels and there value. if you set the level above (changing "CRITICAL") will
+        # change what message is shown. any logging types with a numeric value BELOW AND EQUAL the set level will not be show
+        # e.g. if the level is ERROR, only CRITICAL will be shown as 50 > 40
+
+        # | Level    | Value |
+        # |----------|-------|
+        # | CRITICAL | 50    |
+        # | ERROR    | 40    |
+        # | WARNING  | 30    |
+        # | INFO     | 20    |
+        # | DEBUG    | 10    |
+        # | NOTSET   | 0     |
 
     # if quiet flag is enabled, stdout (console output) is written to devnull where data is discarded
     if args.quiet:
@@ -86,8 +98,6 @@ def main():
     if 'func' in vars(args):
         print('calling the appropriate function for parser')
         args.func(args)
-    else:
-        print("no subparser called")
 
     # # below are logging levels with "debug" being the lowest and "critical" being the highest
     # logging.debug(
