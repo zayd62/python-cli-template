@@ -5,6 +5,14 @@ import os
 from src import upload, download
 
 
+def a_parser(args):
+    print(' this is called when subparser a is invoded')
+
+
+def b_parser(args):
+    print(' this is called when subparser b is invoded')
+
+
 def main():
     #####################################################################
     #            Code for parsing command line arguments                #
