@@ -56,6 +56,11 @@ def main():
     # a function to call when subparser invoked
     parser_b.set_defaults(func=upload.start)
 
+    # if no arguments are given i.e. only the command name is invoked. this will ensure that the help message is printed out
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     # writing the arguments to a variable to be accesed
     args = parser.parse_args()
 
