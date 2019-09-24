@@ -2,6 +2,7 @@ import logging
 import argparse
 import sys
 import os
+from src import upload, download
 
 
 def main():
@@ -25,13 +26,16 @@ def main():
     group.add_argument('-q', '--quiet', action='store_true',
                        help='Give no output')
 
-    # a mandatory argument. we also specified that only integers can be supplied
-    parser.add_argument(
-        'square', help='This is the help for echo, a mandatory argument of type int', type=int)
+    # the following two blocks of code are commented out as they are not relevent to the example but remain
+    # to demonstrate how to write arguments
 
-    # an argument that accepts multiple value seperated by a comma. the "-" means it is optional
-    parser.add_argument(
-        '--multiple', help='This optional option accepts multiple options', nargs='*')
+    # # a mandatory argument. we also specified that only integers can be supplied
+    # parser.add_argument(
+    #     'square', help='This is the help for echo, a mandatory argument of type int', type=int)
+
+    # # an argument that accepts multiple value seperated by a comma. the "-" means it is optional
+    # parser.add_argument(
+    #     '--multiple', help='This optional option accepts multiple options', nargs='*')
 
     # code for subparsers
     # dest='subparser_name' is used to identify the subparser name
@@ -39,16 +43,18 @@ def main():
         title='List of sub commands', description='A description of all the available sub commmands', help='All the commands', dest='subparser_name')
 
     # code for subparser command a
-    parser_a = subparsers.add_parser('a', help='a help')
-    parser_a.add_argument('bar', type=int, help='bar help')
+    parser_a = subparsers.add_parser('download', help='help for downloading')
+    parser_a.add_argument('url', type=str, help='url for downloading from')
     # a function to call when subparser invoked
-    parser_a.set_defaults(func=a_parser)
+    parser_a.set_defaults(func=download.start)
 
     # create the parser for the "b" command
-    parser_b = subparsers.add_parser('b', help='b help')
-    parser_b.add_argument('--baz', help='baz help')
+    parser_b = subparsers.add_parser('upload', help='help for uploading')
+    parser_b.add_argument('url', type=str, help='url for uploading to')
+    parser_b.add_argument(
+        'file', help='file paths. minimum of 1 but can have more', nargs='+')
     # a function to call when subparser invoked
-    parser_b.set_defaults(func=b_parser)
+    parser_b.set_defaults(func=upload.start)
 
     # writing the arguments to a variable to be accesed
     args = parser.parse_args()
@@ -65,11 +71,11 @@ def main():
     #        Application code below         #
     #########################################
 
-    # prints all the arguments as Namespace object https://docs.python.org/3/library/argparse.html#the-namespace-object
-    print("args -->", args)
+    # # prints all the arguments as Namespace object https://docs.python.org/3/library/argparse.html#the-namespace-object
+    # print("args -->", args)
 
-    # print all the arguments as a dictionary
-    print('vars(args) -->', vars(args))
+    # # print all the arguments as a dictionary
+    # print('vars(args) -->', vars(args))
 
     # identifying if a subparser is invoked. if invoked, call appripriate function
     if 'func' in vars(args):
@@ -78,18 +84,16 @@ def main():
     else:
         print("no subparser called")
 
-    print('this is the start of the program. This should appear even if verbosity is disabled, unless the quiet option is enabled')
-
-    # below are logging levels with "debug" being the lowest and "critical" being the highest
-    logging.debug(
-        'The lowest level. Used for small details. Usually you care about these messages only when diagnosing problems.')
-    logging.info('Used to record information on general events in your program or confirm that things are working at their point in the program.')
-    logging.warning(
-        'Used to indicate a potential problem that doesn’t prevent the program from working but might do so in the future.')
-    logging.error(
-        'Used to record an error that caused the program to fail to do something')
-    logging.critical(
-        'The highest level. Used to indicate a fatal error that has caused or is about to cause the program to stop running entirely.')
+    # # below are logging levels with "debug" being the lowest and "critical" being the highest
+    # logging.debug(
+    #     'The lowest level. Used for small details. Usually you care about these messages only when diagnosing problems.')
+    # logging.info('Used to record information on general events in your program or confirm that things are working at their point in the program.')
+    # logging.warning(
+    #     'Used to indicate a potential problem that doesn’t prevent the program from working but might do so in the future.')
+    # logging.error(
+    #     'Used to record an error that caused the program to fail to do something')
+    # logging.critical(
+    #     'The highest level. Used to indicate a fatal error that has caused or is about to cause the program to stop running entirely.')
 
 
 if __name__ == "__main__":
