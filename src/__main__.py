@@ -2,48 +2,7 @@ import logging
 import argparse
 import sys
 import os
-
-
-class MyFormatter(logging.Formatter):
-    """
-    A custom formatter that allows you to specify custom formatting options for the different
-    logging levels. If no custom format is specified, it will use the 'base format'
-
-    based on https://stackoverflow.com/a/14859558
-    """
-    # the base format, used when a format for a specific level is not defined
-    base_format = '%(levelname)s: %(asctime)-8s [%(filename)s:%(lineno)d]: %(message)s \n'
-
-    # defining the critical format
-    critical_format = base_format
-
-    def __init__(self):
-        """
-        Sets the base format according to the class variable 'base_format'
-        """
-        super().__init__(fmt=MyFormatter.base_format, datefmt=None, style='%')
-
-    def format(self, record):
-        """
-        sets the appropriate format for each level
-        See https://docs.python.org/3/library/logging.html#logging.Formatter.format
-        """
-
-        # Save the original format configured by the user
-        # when the logger formatter was instantiated
-        format_orig = self._style._fmt
-
-        # Replace the original format with one customized by logging level
-        if record.levelno == logging.CRITICAL:
-            self._style._fmt = MyFormatter.critical_format
-
-        # Call the original formatter class to do the grunt work
-        result = logging.Formatter.format(self, record)
-
-        # Restore the original format configured by the user
-        self._style._fmt = format_orig
-
-        return result
+from src import upload, download
 
 
 def a_parser(args):
@@ -75,13 +34,16 @@ def main():
     group.add_argument('-q', '--quiet', action='store_true',
                        help='Give no output')
 
-    # a mandatory argument. we also specified that only integers can be supplied
-    parser.add_argument(
-        'square', help='This is the help for echo, a mandatory argument of type int', type=int)
+    # the following two blocks of code are commented out as they are not relevent to the example but remain
+    # to demonstrate how to write arguments
 
-    # an argument that accepts multiple value seperated by a comma. the "-" means it is optional
-    parser.add_argument(
-        '--multiple', help='This optional option accepts multiple options', nargs='*')
+    # # a mandatory argument. we also specified that only integers can be supplied
+    # parser.add_argument(
+    #     'square', help='This is the help for echo, a mandatory argument of type int', type=int)
+
+    # # an argument that accepts multiple value seperated by a comma. the "-" means it is optional
+    # parser.add_argument(
+    #     '--multiple', help='This optional option accepts multiple options', nargs='*')
 
     # code for subparsers
     # dest='subparser_name' is used to identify the subparser name
@@ -89,16 +51,23 @@ def main():
         title='List of sub commands', description='A description of all the available sub commmands', help='All the commands', dest='subparser_name')
 
     # code for subparser command a
-    parser_a = subparsers.add_parser('a', help='a help')
-    parser_a.add_argument('bar', type=int, help='bar help')
+    parser_a = subparsers.add_parser('download', help='help for downloading')
+    parser_a.add_argument('url', type=str, help='url for downloading from')
     # a function to call when subparser invoked
-    parser_a.set_defaults(func=a_parser)
+    parser_a.set_defaults(func=download.start)
 
     # create the parser for the "b" command
-    parser_b = subparsers.add_parser('b', help='b help')
-    parser_b.add_argument('--baz', help='baz help')
+    parser_b = subparsers.add_parser('upload', help='help for uploading')
+    parser_b.add_argument('url', type=str, help='url for uploading to')
+    parser_b.add_argument(
+        'file', help='file paths. minimum of 1 but can have more', nargs='+')
     # a function to call when subparser invoked
-    parser_b.set_defaults(func=b_parser)
+    parser_b.set_defaults(func=upload.start)
+
+    # if no arguments are given i.e. only the command name is invoked. this will ensure that the help message is printed out
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     # writing the arguments to a variable to be accesed
     args = parser.parse_args()
@@ -106,61 +75,48 @@ def main():
     # if verbose flag not passed on as an argument, this will disable all logging levels
     if not args.verbose:
         logging.disable(logging.CRITICAL)  # This will disable all logging
+        # the table below shows the logging levels and there value. if you set the level above (changing "CRITICAL") will
+        # change what message is shown. any logging types with a numeric value BELOW AND EQUAL the set level will not be show
+        # e.g. if the level is ERROR, only CRITICAL will be shown as 50 > 40
+
+        # | Level    | Value |
+        # |----------|-------|
+        # | CRITICAL | 50    |
+        # | ERROR    | 40    |
+        # | WARNING  | 30    |
+        # | INFO     | 20    |
+        # | DEBUG    | 10    |
+        # | NOTSET   | 0     |
 
     # if quiet flag is enabled, stdout (console output) is written to devnull where data is discarded
     if args.quiet:
         sys.stdout = open(os.devnull, 'a')
 
     #########################################
-    #           Code for logging            #
-    #########################################
-
-    # create a formatter
-    fmt = MyFormatter()
-
-    # code for logging to console
-    hdlr_console = logging.StreamHandler(sys.stdout)
-    hdlr_console.setFormatter(fmt)
-    logging.root.addHandler(hdlr_console)
-
-    '''
-    # Code for logging to file
-    hdlr_file = logging.FileHandler('spam.log')
-    hdlr_file.setFormatter(fmt)
-    logging.root.addHandler(hdlr_file)
-    '''
-
-    logging.root.setLevel(logging.DEBUG)
-
-    #########################################
     #        Application code below         #
     #########################################
 
-    # prints all the arguments as Namespace object https://docs.python.org/3/library/argparse.html#the-namespace-object
-    print("args -->", args)
+    # # prints all the arguments as Namespace object https://docs.python.org/3/library/argparse.html#the-namespace-object
+    # print("args -->", args)
 
-    # print all the arguments as a dictionary
-    print('vars(args) -->', vars(args))
+    # # print all the arguments as a dictionary
+    # print('vars(args) -->', vars(args))
 
     # identifying if a subparser is invoked. if invoked, call appripriate function
     if 'func' in vars(args):
         print('calling the appropriate function for parser')
         args.func(args)
-    else:
-        print("no subparser called")
 
-    print('this is the start of the program. This should appear even if verbosity is disabled, unless the quiet option is enabled')
-
-    # below are logging levels with "debug" being the lowest and "critical" being the highest
-    logging.debug(
-        'The lowest level. Used for small details. Usually you care about these messages only when diagnosing problems.')
-    logging.info('Used to record information on general events in your program or confirm that things are working at their point in the program.')
-    logging.warning(
-        'Used to indicate a potential problem that doesn’t prevent the program from working but might do so in the future.')
-    logging.error(
-        'Used to record an error that caused the program to fail to do something')
-    logging.critical(
-        'The highest level. Used to indicate a fatal error that has caused or is about to cause the program to stop running entirely.')
+    # # below are logging levels with "debug" being the lowest and "critical" being the highest
+    # logging.debug(
+    #     'The lowest level. Used for small details. Usually you care about these messages only when diagnosing problems.')
+    # logging.info('Used to record information on general events in your program or confirm that things are working at their point in the program.')
+    # logging.warning(
+    #     'Used to indicate a potential problem that doesn’t prevent the program from working but might do so in the future.')
+    # logging.error(
+    #     'Used to record an error that caused the program to fail to do something')
+    # logging.critical(
+    #     'The highest level. Used to indicate a fatal error that has caused or is about to cause the program to stop running entirely.')
 
 
 if __name__ == "__main__":
