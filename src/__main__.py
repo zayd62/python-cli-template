@@ -6,6 +6,7 @@ from src import upload, download
 
 
 def main():
+    logging.root.setLevel(logging.DEBUG)
     args = parse_cmd_args(sys.argv[1:])
     # if verbose flag not passed on as an argument, this will disable all logging levels
     if not args.verbose:
